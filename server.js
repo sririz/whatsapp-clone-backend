@@ -5,9 +5,8 @@ const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
 
-// [NEW] Import Security Packages
+// Import Security Packages
 const helmet = require("helmet");
-const mongoSanitize = require("express-mongo-sanitize");
 const rateLimit = require("express-rate-limit");
 
 // =========================
@@ -38,14 +37,31 @@ connectDB();
 const app = express();
 
 // =========================
-// [NEW] Security Middleware
+// Security Middleware
 // =========================
 
 // 1. Helmet sets various HTTP headers to secure the app against known web vulnerabilities.
 app.use(helmet());
 
-// 2. Mongo Sanitize prevents hackers from sending MongoDB operator injections like {"$gt": ""}
-app.use(mongoSanitize());
+// 2. Custom Mongo Sanitize (Express 5 compatible) to prevent NoSQL injection
+const sanitize = (req, res, next) => {
+    const clean = (obj) => {
+        if (obj && typeof obj === 'object') {
+            for (const key in obj) {
+                if (key.includes('$') || key.includes('.')) {
+                    delete obj[key];
+                } else if (typeof obj[key] === 'object') {
+                    clean(obj[key]);
+                }
+            }
+        }
+    };
+    clean(req.body);
+    clean(req.query);
+    clean(req.params);
+    next();
+};
+app.use(sanitize);
 
 // 3. CORS (Updated to "*" so it works when we deploy to Vercel/Render)
 app.use(cors({
