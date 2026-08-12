@@ -1,0 +1,268 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f2f5;
+}
+
+.chat-container {
+    display: flex;
+    width: 90%;
+    height: 90vh;
+    background: white;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 30%;
+    background: #f8f9fa;
+    border-right: 1px solid #e9edef;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile {
+    padding: 15px 20px;
+    background: #f0f2f5;
+    border-bottom: 1px solid #e9edef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile h2 {
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.logout-btn {
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.logout-btn:hover { background: #e60000; }
+
+#searchUser {
+    padding: 12px 15px;
+    margin: 15px;
+    border: 1px solid #e9edef;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+}
+
+#userList {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.user {
+    padding: 15px;
+    border-bottom: 1px solid #f0f2f5;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.user:hover { background: #e9edef; }
+
+.user h3 {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.user p {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.user small {
+    font-size: 0.75rem;
+    display: block;
+    margin-top: 5px;
+}
+
+/* Chat Area */
+.chat-area {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded72.png');
+}
+
+.chat-header {
+    padding: 15px 20px;
+    background: #f0f2f5;
+    border-bottom: 1px solid #e9edef;
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between back button and user info */
+}
+
+/* [NEW] Back Button */
+.back-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #333;
+    cursor: pointer;
+    display: none; /* Hidden on desktop */
+}
+
+.header-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header h2 {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.user-status {
+    font-size: 0.8rem;
+    color: gray;
+}
+
+/* Messages */
+.messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message {
+    max-width: 60%;
+    display: flex;
+}
+
+.message.sent { align-self: flex-end; }
+.message.received { align-self: flex-start; }
+
+.message .bubble {
+    padding: 10px 15px;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.message.sent .bubble { background: #d9fdd3; }
+.message.received .bubble { background: #ffffff; }
+
+.message .bubble p {
+    font-size: 0.95rem;
+    color: #333;
+    margin-bottom: 5px;
+    word-wrap: break-word;
+}
+
+.message .bubble small {
+    font-size: 0.7rem;
+    color: #667781;
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Ticks Styling */
+.tick { font-size: 0.75rem; }
+.tick.sent { color: #667781; }
+.tick.delivered { color: #667781; }
+.tick.seen { color: #53bdeb; }
+
+/* Message Box */
+.message-box {
+    padding: 15px;
+    background: #f0f2f5;
+    display: flex;
+    gap: 10px;
+}
+
+#messageInput {
+    flex: 1;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+}
+
+#sendBtn {
+    padding: 12px 25px;
+    background: #00a884;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+#sendBtn:hover { background: #008f72; }
+
+
+/* ========================================= */
+/* [NEW] Mobile Responsive Design            */
+/* ========================================= */
+@media (max-width: 768px) {
+    .chat-container {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    /* Show back button on mobile */
+    .back-btn {
+        display: block;
+    }
+
+    /* Sidebar takes full screen by default */
+    .sidebar {
+        width: 100%;
+    }
+
+    /* Chat area takes full screen, but is hidden by default */
+    .chat-area {
+        width: 100%;
+        display: none;
+    }
+
+    /* When a user is selected, JS adds .show-chat */
+    .chat-container.show-chat .sidebar {
+        display: none;
+    }
+    .chat-container.show-chat .chat-area {
+        display: flex;
+    }
+
+    /* Make messages slightly wider on mobile */
+    .message {
+        max-width: 80%;
+    }
+}
