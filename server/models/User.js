@@ -34,12 +34,27 @@ const userSchema = new mongoose.Schema(
         default: null
     },
     // =========================
-    // NEW: Contacts List
+    // Contacts List
     // =========================
     contacts: [{ 
         type: mongoose.Schema.Types.ObjectId, 
         ref: "User" 
-    }]
+    }],
+    // =========================
+    // NEW: OTP & Verification Fields
+    // =========================
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    otp: {
+        type: String,
+        default: null
+    },
+    otpExpires: {
+        type: Date,
+        default: null
+    }
 },
 {
     timestamps: true
