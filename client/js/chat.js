@@ -114,18 +114,30 @@ async function loadUsers() {
     }
 }
 
+// =========================
+// Display Users (with Unread Badges)
+// =========================
 function displayUsers(users) {
     const userList = document.getElementById("userList");
     userList.innerHTML = "";
     users.forEach(user => {
         const div = document.createElement("div");
         div.className = "user";
+        
+        // Create unread badge HTML if unreadCount is greater than 0
+        const unreadBadge = user.unreadCount > 0 
+            ? `<span class="unread-badge">${user.unreadCount}</span>` 
+            : '';
+
         div.innerHTML = `
-            <h3>${user.name}</h3>
-            <p>${user.email}</p>
-            <small style="color: ${user.isOnline ? 'green' : 'gray'}">
-                ${user.isOnline ? '🟢 Online' : '⚪ Offline'}
-            </small>
+            <div class="user-info">
+                <h3>${user.name}</h3>
+                <p>${user.email}</p>
+                <small style="color: ${user.isOnline ? 'green' : 'gray'}">
+                    ${user.isOnline ? '🟢 Online' : '⚪ Offline'}
+                </small>
+            </div>
+            ${unreadBadge}
         `;
         div.onclick = () => selectUser(user);
         userList.appendChild(div);
@@ -142,6 +154,9 @@ async function selectUser(user) {
     document.getElementById("messages").innerHTML = "";
     chatContainer.classList.add("show-chat");
     await loadMessages(user._id);
+    
+    // Refresh sidebar to clear the unread badge for this user since we opened it
+    loadUsers(); 
 }
 
 function updateUserStatus(user) {
@@ -282,6 +297,9 @@ socket.on("receiveMessage", (data) => {
                 messageIds: [data.messageId]
             });
         }
+    } else {
+        // If the chat isn't open, refresh the sidebar to show the new unread badge!
+        loadUsers();
     }
 });
 

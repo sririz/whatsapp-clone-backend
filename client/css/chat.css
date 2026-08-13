@@ -337,3 +337,27 @@ body {
         max-width: 80%;
     }
 }
+/* ========================= */
+/* Unread Message Badge      */
+/* ========================= */
+.user {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.unread-badge {
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    padding: 4px 9px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+    margin-left: 10px;
+}
