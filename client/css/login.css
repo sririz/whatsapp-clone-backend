@@ -1,106 +1,89 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, sans-serif;
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-
-body{
-
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#075e54;
-
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
 }
 
-
-.login-container{
-
-    background:white;
-    width:350px;
-    padding:40px;
-    border-radius:15px;
-    text-align:center;
-    box-shadow:0 10px 30px rgba(0,0,0,0.3);
-
+.auth-box {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    text-align: center;
 }
 
-
-.logo{
-
-    font-size:60px;
-    margin-bottom:10px;
-
+.logo { 
+    font-size: 50px; 
+    margin-bottom: 10px; 
 }
 
-
-h1{
-
-    color:#075e54;
-    margin-bottom:10px;
-
+h1 { 
+    margin: 0 0 10px 0; 
+    color: #333; 
+    font-size: 24px; 
 }
 
-
-p{
-
-    color:#666;
-    margin-bottom:25px;
-
+.subtitle { 
+    color: #777; 
+    margin-bottom: 30px; 
+    font-size: 14px; 
 }
 
-
-input{
-
-    width:100%;
-    padding:12px;
-    margin-bottom:15px;
-
-    border:1px solid #ddd;
-    border-radius:8px;
-
-    font-size:16px;
-
+form { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
 }
 
-
-button{
-
-    width:100%;
-    padding:12px;
-
-    background:#25d366;
-    color:white;
-
-    border:none;
-    border-radius:8px;
-
-    font-size:18px;
-    cursor:pointer;
-
+input {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
 }
 
-
-button:hover{
-
-    background:#128c7e;
-
+input:focus { 
+    border-color: #667eea; 
 }
 
-
-.register-link{
-
-    margin-top:20px;
-
+button {
+    padding: 15px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 10px;
 }
 
+button:hover { 
+    background: #5568d3; 
+}
 
-a{
+.switch-link { 
+    margin-top: 20px; 
+    color: #666; 
+    font-size: 14px; 
+}
 
-    color:#128c7e;
-    text-decoration:none;
-
+.switch-link a { 
+    color: #667eea; 
+    text-decoration: none; 
+    font-weight: bold; 
 }
