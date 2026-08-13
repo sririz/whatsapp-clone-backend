@@ -10,7 +10,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f0f2f5;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .chat-container {
@@ -18,55 +18,103 @@ body {
     width: 90%;
     height: 90vh;
     background: white;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    border-radius: 12px;
     overflow: hidden;
 }
 
 /* Sidebar */
 .sidebar {
     width: 30%;
-    background: #f8f9fa;
-    border-right: 1px solid #e9edef;
+    background: #f9fafc; /* Light purple-gray tint */
+    border-right: 1px solid #eef2ff;
     display: flex;
     flex-direction: column;
 }
 
 .profile {
     padding: 15px 20px;
-    background: #f0f2f5;
-    border-bottom: 1px solid #e9edef;
+    background: #ffffff;
+    border-bottom: 1px solid #eef2ff;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .profile h2 {
     font-size: 1.2rem;
-    color: #333;
+    color: #667eea; /* Purple text */
+    font-weight: 700;
 }
 
 .logout-btn {
-    background: #ff4d4d;
+    background: #ff4757;
     color: white;
     border: none;
     padding: 8px 15px;
-    border-radius: 8px;
+    border-radius: 20px;
     cursor: pointer;
     font-size: 0.85rem;
     font-weight: bold;
     transition: background 0.2s;
 }
 
-.logout-btn:hover { background: #e60000; }
+.logout-btn:hover { background: #e02f3f; }
 
+/* ========================= */
+/* NEW: Add Contact Box      */
+/* ========================= */
+.add-contact-box {
+    display: flex;
+    padding: 12px;
+    background: #ffffff;
+    border-bottom: 1px solid #eef2ff;
+}
+
+.add-contact-box input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #e0e7ff;
+    border-radius: 20px;
+    margin-right: 8px;
+    outline: none;
+    font-size: 14px;
+    background: #f9fafc;
+    transition: all 0.2s;
+}
+
+.add-contact-box input:focus {
+    border-color: #667eea;
+    background: #ffffff;
+}
+
+.add-contact-box button {
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.add-contact-box button:hover { background: #5568d3; }
+
+/* Keep old search user styles just in case, but hidden if not used */
 #searchUser {
     padding: 12px 15px;
     margin: 15px;
-    border: 1px solid #e9edef;
-    border-radius: 8px;
+    border: 1px solid #e0e7ff;
+    border-radius: 20px;
     outline: none;
     font-size: 14px;
+    background: #f9fafc;
 }
 
 #userList {
@@ -76,12 +124,12 @@ body {
 
 .user {
     padding: 15px;
-    border-bottom: 1px solid #f0f2f5;
+    border-bottom: 1px solid #eef2ff;
     cursor: pointer;
     transition: background 0.2s;
 }
 
-.user:hover { background: #e9edef; }
+.user:hover { background: #eef2ff; } /* Light purple hover */
 
 .user h3 {
     font-size: 1rem;
@@ -105,24 +153,25 @@ body {
     width: 70%;
     display: flex;
     flex-direction: column;
-    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded72.png');
+    background-color: #f5f7fa; /* Clean light gray-purple background */
 }
 
 .chat-header {
     padding: 15px 20px;
-    background: #f0f2f5;
-    border-bottom: 1px solid #e9edef;
+    background: #ffffff;
+    border-bottom: 1px solid #eef2ff;
     display: flex;
     align-items: center;
-    gap: 15px; /* Space between back button and user info */
+    gap: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-/* [NEW] Back Button */
+/* Back Button */
 .back-btn {
     background: transparent;
     border: none;
     font-size: 1.5rem;
-    color: #333;
+    color: #667eea;
     cursor: pointer;
     display: none; /* Hidden on desktop */
 }
@@ -163,25 +212,34 @@ body {
 
 .message .bubble {
     padding: 10px 15px;
-    border-radius: 10px;
+    border-radius: 12px;
     background: white;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     position: relative;
 }
 
-.message.sent .bubble { background: #d9fdd3; }
-.message.received .bubble { background: #ffffff; }
+/* Sent message is now Purple */
+.message.sent .bubble { 
+    background: #667eea; 
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+/* Received message is White */
+.message.received .bubble { 
+    background: #ffffff; 
+    color: #333;
+    border-bottom-left-radius: 2px;
+}
 
 .message .bubble p {
     font-size: 0.95rem;
-    color: #333;
     margin-bottom: 5px;
     word-wrap: break-word;
 }
 
 .message .bubble small {
     font-size: 0.7rem;
-    color: #667781;
     text-align: right;
     display: flex;
     justify-content: flex-end;
@@ -189,46 +247,59 @@ body {
     gap: 4px;
 }
 
+/* Adjust text colors for the purple bubble */
+.message.sent .bubble p { color: white; }
+.message.sent .bubble small { color: rgba(255,255,255,0.8); }
+.message.received .bubble small { color: #667781; }
+
 /* Ticks Styling */
 .tick { font-size: 0.75rem; }
-.tick.sent { color: #667781; }
-.tick.delivered { color: #667781; }
-.tick.seen { color: #53bdeb; }
+.tick.sent { color: rgba(255,255,255,0.8); }
+.tick.delivered { color: rgba(255,255,255,0.8); }
+.tick.seen { color: #4ade80; } /* Bright green tick on purple bubble */
 
 /* Message Box */
 .message-box {
     padding: 15px;
-    background: #f0f2f5;
+    background: #ffffff;
+    border-top: 1px solid #eef2ff;
     display: flex;
     gap: 10px;
 }
 
 #messageInput {
     flex: 1;
-    padding: 12px 15px;
-    border: none;
-    border-radius: 8px;
+    padding: 12px 20px;
+    border: 1px solid #e0e7ff;
+    border-radius: 25px;
     outline: none;
     font-size: 14px;
+    background: #f9fafc;
+    transition: all 0.2s;
+}
+
+#messageInput:focus {
+    border-color: #667eea;
+    background: #ffffff;
 }
 
 #sendBtn {
-    padding: 12px 25px;
-    background: #00a884;
+    padding: 12px 30px;
+    background: #667eea;
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 25px;
     cursor: pointer;
     font-size: 14px;
     font-weight: bold;
     transition: background 0.2s;
 }
 
-#sendBtn:hover { background: #008f72; }
+#sendBtn:hover { background: #5568d3; }
 
 
 /* ========================================= */
-/* [NEW] Mobile Responsive Design            */
+/* Mobile Responsive Design                  */
 /* ========================================= */
 @media (max-width: 768px) {
     .chat-container {

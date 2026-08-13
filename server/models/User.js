@@ -7,43 +7,39 @@ const userSchema = new mongoose.Schema(
         required: true,
         trim: true
     },
-
     email: {
         type: String,
         required: true,
         unique: true,
         lowercase: true
     },
-
     password: {
         type: String,
         required: true
     },
-
     profilePic: {
         type: String,
         default: ""
     },
-
     about: {
         type: String,
-        default: "Hey there! I am using WhatsApp Clone."
+        default: "Hey there! I am using The Messager."
     },
-
-    // =========================
-    // Online Status
-    // =========================
-
     isOnline: {
         type: Boolean,
         default: false
     },
-
     lastSeen: {
         type: Date,
         default: null
-    }
-
+    },
+    // =========================
+    // NEW: Contacts List
+    // =========================
+    contacts: [{ 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "User" 
+    }]
 },
 {
     timestamps: true

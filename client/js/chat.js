@@ -1,7 +1,6 @@
 // =========================================
-// WhatsApp Clone
+// The Messager
 // chat.js - Complete File
-// + Mobile Responsive Logic + XSS Protection
 // =========================================
 
 // =========================
@@ -34,6 +33,38 @@ logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         window.location.href = "login.html";
+    }
+});
+
+// =========================
+// NEW: Add Contact Logic
+// =========================
+document.getElementById("addContactBtn").addEventListener("click", async () => {
+    const email = document.getElementById("contactEmail").value.trim();
+    if (!email) return alert("Please enter an email");
+
+    try {
+        const response = await fetch("http://13.61.35.45/api/user/add-contact", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ email })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert("Contact added successfully!");
+            document.getElementById("contactEmail").value = ""; // Clear input
+            loadUsers(); // Refresh the sidebar
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        console.log(error);
+        alert("Failed to add contact");
     }
 });
 
@@ -319,7 +350,7 @@ socket.on("onlineUsers", (usersArray) => {
 });
 
 // =========================
-// [NEW] XSS Protection Helper
+// XSS Protection Helper
 // =========================
 function escapeHtml(text) {
     if (!text) return "";
@@ -365,7 +396,6 @@ function displayMessage(messageObj) {
         }
     }
 
-    // [NEW] Using escapeHtml() to prevent XSS attacks
     div.innerHTML = `
         <div class="bubble">
             <p>${escapeHtml(messageObj.message)}</p>
@@ -382,4 +412,4 @@ function displayMessage(messageObj) {
 // =========================
 setInterval(() => { loadUsers(); }, 5000);
 loadUsers();
-console.log("✅ WhatsApp Clone Loaded Successfully");
+console.log("✅ The Messager Loaded Successfully");
