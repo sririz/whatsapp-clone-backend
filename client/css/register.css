@@ -58,3 +58,21 @@ button:hover { background: #5568d3; }
 
 .switch-link { margin-top: 20px; color: #666; font-size: 14px; }
 .switch-link a { color: #667eea; text-decoration: none; font-weight: bold; }
+/* Password Checklist Styling */
+.password-checklist {
+    text-align: left;
+    margin: -5px 0 20px 5px;
+}
+
+.password-checklist small {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: #999;
+    transition: color 0.2s;
+}
+
+.password-checklist small.valid {
+    color: #28a745; /* Green when valid */
+    font-weight: bold;
+}

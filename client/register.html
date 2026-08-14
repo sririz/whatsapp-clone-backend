@@ -16,7 +16,22 @@
             <form id="registerForm">
                 <input type="text" id="name" placeholder="Full Name" required>
                 <input type="email" id="email" placeholder="Email" required>
-                <input type="password" id="password" placeholder="Password" required>
+                
+                <input 
+                    type="password" 
+                    id="password" 
+                    placeholder="Password" 
+                    required
+                >
+                
+                <!-- NEW: Password Checklist -->
+                <div class="password-checklist">
+                    <small id="req-length" class="invalid">❌ At least 8 characters</small>
+                    <small id="req-capital" class="invalid">❌ 1 Capital letter (A-Z)</small>
+                    <small id="req-number" class="invalid">❌ 1 Number (0-9)</small>
+                    <small id="req-special" class="invalid">❌ 1 Special character (!@#$%^&*)</small>
+                </div>
+                
                 <button type="submit">Register</button>
             </form>
             

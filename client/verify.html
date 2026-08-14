@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Messager - Verify OTP</title>
+    <link rel="stylesheet" href="css/login.css"> <!-- Reusing login CSS -->
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="logo">💬</div>
+            <h1>Verify Email</h1>
+            <p class="subtitle">Enter the 6-digit code sent to your email</p>
+            
+            <form id="verifyForm">
+                <input 
+                    type="text" 
+                    id="otp" 
+                    placeholder="6-digit OTP" 
+                    maxlength="6" 
+                    required
+                    style="text-align: center; letter-spacing: 5px; font-size: 1.5rem;"
+                >
+                <button type="submit">Verify & Login</button>
+            </form>
+            
+            <p class="switch-link">
+                Didn't get the code? <a href="#" id="resendBtn">Resend OTP</a>
+            </p>
+        </div>
+    </div>
+    
+    <script src="js/verify.js"></script>
+</body>
+</html>
