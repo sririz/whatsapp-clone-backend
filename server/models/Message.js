@@ -14,7 +14,6 @@ const messageSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        // [NEW] Delivery and Seen Status
         delivered: {
             type: Boolean,
             default: false
@@ -22,7 +21,16 @@ const messageSchema = new mongoose.Schema(
         seen: {
             type: Boolean,
             default: false
-        }
+        },
+        // NEW: Deletion Tracking
+        isDeleted: { 
+            type: Boolean, 
+            default: false 
+        },
+        deletedFor: [{ 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: "User" 
+        }]
     },
     { timestamps: true }
 );

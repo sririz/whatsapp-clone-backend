@@ -37,7 +37,7 @@ logoutBtn.addEventListener("click", () => {
 });
 
 // =========================
-// NEW: Add Contact Logic
+// Add Contact Logic
 // =========================
 document.getElementById("addContactBtn").addEventListener("click", async () => {
     const email = document.getElementById("contactEmail").value.trim();
@@ -46,19 +46,14 @@ document.getElementById("addContactBtn").addEventListener("click", async () => {
     try {
         const response = await fetch("http://13.61.35.45/api/user/add-contact", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ email })
         });
-
         const data = await response.json();
-
         if (data.success) {
             alert("Contact added successfully!");
-            document.getElementById("contactEmail").value = ""; // Clear input
-            loadUsers(); // Refresh the sidebar
+            document.getElementById("contactEmail").value = "";
+            loadUsers();
         } else {
             alert(data.message);
         }
@@ -71,9 +66,7 @@ document.getElementById("addContactBtn").addEventListener("click", async () => {
 // =========================
 // Mobile Back Button Logic
 // =========================
-backBtn.addEventListener("click", () => {
-    chatContainer.classList.remove("show-chat");
-});
+backBtn.addEventListener("click", () => { chatContainer.classList.remove("show-chat"); });
 
 // =========================
 // Socket Connection
@@ -85,9 +78,7 @@ socket.on("connect", () => {
     if (currentUser) socket.emit("join", currentUser.id);
 });
 
-socket.on("disconnect", () => {
-    console.log("🔴 Socket Disconnected");
-});
+socket.on("disconnect", () => { console.log("🔴 Socket Disconnected"); });
 
 // =========================
 // Load Users
@@ -109,26 +100,16 @@ async function loadUsers() {
                 }
             }
         }
-    } catch (error) {
-        console.log(error);
-    }
+    } catch (error) { console.log(error); }
 }
 
-// =========================
-// Display Users (with Unread Badges)
-// =========================
 function displayUsers(users) {
     const userList = document.getElementById("userList");
     userList.innerHTML = "";
     users.forEach(user => {
         const div = document.createElement("div");
         div.className = "user";
-        
-        // Create unread badge HTML if unreadCount is greater than 0
-        const unreadBadge = user.unreadCount > 0 
-            ? `<span class="unread-badge">${user.unreadCount}</span>` 
-            : '';
-
+        const unreadBadge = user.unreadCount > 0 ? `<span class="unread-badge">${user.unreadCount}</span>` : '';
         div.innerHTML = `
             <div class="user-info">
                 <h3>${user.name}</h3>
@@ -154,15 +135,12 @@ async function selectUser(user) {
     document.getElementById("messages").innerHTML = "";
     chatContainer.classList.add("show-chat");
     await loadMessages(user._id);
-    
-    // Refresh sidebar to clear the unread badge for this user since we opened it
     loadUsers(); 
 }
 
 function updateUserStatus(user) {
     if (!user) return;
     if (userStatusSpan.innerText === "typing...") return;
-
     if (user.isOnline) {
         userStatusSpan.innerText = "Online";
         userStatusSpan.style.color = "green";
@@ -189,12 +167,10 @@ async function loadMessages(userId) {
             headers: { Authorization: `Bearer ${token}` }
         });
         const data = await response.json();
-
         if (data.success) {
             const messages = document.getElementById("messages");
             messages.innerHTML = "";
             let unseenMessageIds = [];
-
             data.data.forEach(msg => {
                 displayMessage(msg);
                 const senderId = typeof msg.sender === "object" ? msg.sender._id : msg.sender;
@@ -202,20 +178,12 @@ async function loadMessages(userId) {
                     unseenMessageIds.push(msg._id);
                 }
             });
-
             messages.scrollTop = messages.scrollHeight;
-
             if (unseenMessageIds.length > 0) {
-                socket.emit("messageSeen", {
-                    sender: userId,
-                    receiver: currentUser.id,
-                    messageIds: unseenMessageIds
-                });
+                socket.emit("messageSeen", { sender: userId, receiver: currentUser.id, messageIds: unseenMessageIds });
             }
         }
-    } catch (error) {
-        console.log(error);
-    }
+    } catch (error) { console.log(error); }
 }
 
 // =========================
@@ -231,34 +199,50 @@ async function sendMessage() {
     try {
         const response = await fetch("http://13.61.35.45/api/message/send", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ receiver: selectedUser._id, message: text })
         });
-
         const data = await response.json();
-
         if (data.success) {
             displayMessage(data.data);
-            socket.emit("sendMessage", {
-                messageId: data.data._id,
-                sender: currentUser.id,
-                receiver: selectedUser._id,
-                message: text
-            });
-
+            socket.emit("sendMessage", { messageId: data.data._id, sender: currentUser.id, receiver: selectedUser._id, message: text });
             messageInput.value = "";
             socket.emit("stopTyping", { receiver: selectedUser._id, sender: currentUser.id });
             document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
-        } else {
-            alert(data.message);
+        } else { alert(data.message); }
+    } catch (error) { console.log(error); alert("Message sending failed"); }
+}
+
+// =========================
+// NEW: Delete Message Function
+// =========================
+window.deleteMessage = async function(messageId, type) {
+    if (!confirm(`Delete this message for ${type}?`)) return;
+    try {
+        const response = await fetch(`http://13.61.35.45/api/message/${messageId}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ type })
+        });
+        const data = await response.json();
+        if (data.success) {
+            const msgDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (msgDiv) {
+                if (type === "everyone") {
+                    const p = msgDiv.querySelector("p");
+                    if (p) p.innerText = "🚫 This message was deleted";
+                    const actions = msgDiv.querySelector(".message-actions");
+                    if (actions) actions.remove();
+                    msgDiv.style.opacity = "0.6";
+                } else {
+                    msgDiv.remove();
+                }
+            }
+            if (type === "everyone" && selectedUser) {
+                socket.emit("deleteMessage", { messageId: messageId, receiver: selectedUser._id, type: type });
+            }
         }
-    } catch (error) {
-        console.log(error);
-        alert("Message sending failed");
-    }
+    } catch (error) { console.log(error); alert("Failed to delete message"); }
 }
 
 // =========================
@@ -280,25 +264,14 @@ messageInput.addEventListener("keypress", (e) => {
 // =========================
 socket.on("receiveMessage", (data) => {
     if (data.messageId) {
-        socket.emit("messageDelivered", {
-            messageId: data.messageId,
-            sender: data.sender,
-            receiver: currentUser.id
-        });
+        socket.emit("messageDelivered", { messageId: data.messageId, sender: data.sender, receiver: currentUser.id });
     }
-
     if (selectedUser && selectedUser._id === data.sender) {
         displayMessage(data);
-
         if (data.messageId) {
-            socket.emit("messageSeen", {
-                sender: data.sender,
-                receiver: currentUser.id,
-                messageIds: [data.messageId]
-            });
+            socket.emit("messageSeen", { sender: data.sender, receiver: currentUser.id, messageIds: [data.messageId] });
         }
     } else {
-        // If the chat isn't open, refresh the sidebar to show the new unread badge!
         loadUsers();
     }
 });
@@ -335,6 +308,20 @@ socket.on("messageSeen", (data) => {
                 }
             }
         });
+    }
+});
+
+// =========================
+// NEW: Receive Delete Event
+// =========================
+socket.on("messageDeleted", (data) => {
+    const msgDiv = document.querySelector(`[data-message-id="${data.messageId}"]`);
+    if (msgDiv && data.type === "everyone") {
+        const p = msgDiv.querySelector("p");
+        if (p) p.innerText = "🚫 This message was deleted";
+        const actions = msgDiv.querySelector(".message-actions");
+        if (actions) actions.remove();
+        msgDiv.style.opacity = "0.6";
     }
 });
 
@@ -378,7 +365,7 @@ function escapeHtml(text) {
 }
 
 // =========================
-// Display Message (with Ticks)
+// Display Message (with Ticks & Delete UI)
 // =========================
 function displayMessage(messageObj) {
     const messages = document.getElementById("messages");
@@ -404,17 +391,33 @@ function displayMessage(messageObj) {
     }
 
     let tickHtml = "";
-    if (senderId == currentUser.id) {
-        if (messageObj.seen === true) {
-            tickHtml = `<span class="tick seen">✓✓</span>`;
-        } else if (messageObj.delivered === true) {
-            tickHtml = `<span class="tick delivered">✓✓</span>`;
+    if (senderId == currentUser.id && !messageObj.isDeleted) {
+        if (messageObj.seen === true) tickHtml = `<span class="tick seen">✓✓</span>`;
+        else if (messageObj.delivered === true) tickHtml = `<span class="tick delivered">✓✓</span>`;
+        else tickHtml = `<span class="tick sent">✓</span>`;
+    }
+
+    // NEW: Delete Actions UI
+    let actionsHtml = "";
+    if (messageId && !messageObj.isDeleted) {
+        if (senderId == currentUser.id) {
+            actionsHtml = `
+                <div class="message-actions">
+                    <span onclick="deleteMessage('${messageId}', 'everyone')">Delete for everyone</span> | 
+                    <span onclick="deleteMessage('${messageId}', 'me')">Delete for me</span>
+                </div>
+            `;
         } else {
-            tickHtml = `<span class="tick sent">✓</span>`;
+            actionsHtml = `
+                <div class="message-actions">
+                    <span onclick="deleteMessage('${messageId}', 'me')">Delete for me</span>
+                </div>
+            `;
         }
     }
 
     div.innerHTML = `
+        ${actionsHtml}
         <div class="bubble">
             <p>${escapeHtml(messageObj.message)}</p>
             <small>${time} ${tickHtml}</small>

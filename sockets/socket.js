@@ -100,6 +100,14 @@ const socketHandler = (io) => {
         });
 
         // =========================
+        // [NEW] Delete Message
+        // =========================
+        socket.on("deleteMessage", (data) => {
+            // Notify the receiver that a message was deleted
+            io.to(data.receiver).emit("messageDeleted", data);
+        });
+
+        // =========================
         // Disconnect
         // =========================
         socket.on("disconnect", async () => {
