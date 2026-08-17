@@ -11,7 +11,7 @@ document
 
     try{
         const response = await fetch(
-            "http://13.61.35.45/api/auth/login",
+            "https://themessager.duckdns.org/api/auth/login",
             {
                 method:"POST",
                 headers:{

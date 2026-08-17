@@ -11,7 +11,7 @@ document.getElementById("verifyForm").addEventListener("submit", async (e) => {
     }
 
     try {
-        const response = await fetch("http://13.61.35.45/api/auth/verify-otp", {
+        const response = await fetch("https://themessager.duckdns.org/api/auth/verify-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, otp })
@@ -41,7 +41,7 @@ document.getElementById("resendBtn").addEventListener("click", async (e) => {
     const email = localStorage.getItem("verifyEmail");
 
     try {
-        const response = await fetch("http://13.61.35.45/api/auth/resend-otp", {
+        const response = await fetch("https://themessager.duckdns.org/api/auth/resend-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email })

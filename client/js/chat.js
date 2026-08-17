@@ -44,7 +44,7 @@ document.getElementById("addContactBtn").addEventListener("click", async () => {
     if (!email) return alert("Please enter an email");
 
     try {
-        const response = await fetch("http://13.61.35.45/api/user/add-contact", {
+        const response = await fetch("https://themessager.duckdns.org/api/user/add-contact", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ email })
@@ -71,7 +71,7 @@ backBtn.addEventListener("click", () => { chatContainer.classList.remove("show-c
 // =========================
 // Socket Connection
 // =========================
-const socket = io("http://13.61.35.45");
+const socket = io("https://themessager.duckdns.org");
 
 socket.on("connect", () => {
     console.log("🟢 Socket Connected:", socket.id);
@@ -85,7 +85,7 @@ socket.on("disconnect", () => { console.log("🔴 Socket Disconnected"); });
 // =========================
 async function loadUsers() {
     try {
-        const response = await fetch("http://13.61.35.45/api/user", {
+        const response = await fetch("https://themessager.duckdns.org/api/user", {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -162,7 +162,7 @@ function updateUserStatus(user) {
 // =========================
 async function loadMessages(userId) {
     try {
-        const response = await fetch(`http://13.61.35.45/api/message/${userId}`, {
+        const response = await fetch(`https://themessager.duckdns.org/api/message/${userId}`, {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -197,7 +197,7 @@ async function sendMessage() {
     if (text === "") return;
 
     try {
-        const response = await fetch("http://13.61.35.45/api/message/send", {
+        const response = await fetch("https://themessager.duckdns.org/api/message/send", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ receiver: selectedUser._id, message: text })
@@ -219,7 +219,7 @@ async function sendMessage() {
 window.deleteMessage = async function(messageId, type) {
     if (!confirm(`Delete this message for ${type}?`)) return;
     try {
-        const response = await fetch(`http://13.61.35.45/api/message/${messageId}`, {
+        const response = await fetch(`https://themessager.duckdns.org/api/message/${messageId}`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ type })

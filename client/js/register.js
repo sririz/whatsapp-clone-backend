@@ -67,7 +67,7 @@ document.getElementById("registerForm").addEventListener("submit", async(e) => {
 
     try {
         const response = await fetch(
-            "http://13.61.35.45/api/auth/register",
+            "https://themessager.duckdns.org/api/auth/register",
             {
                 method:"POST",
                 headers:{
