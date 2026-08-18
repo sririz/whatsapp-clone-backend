@@ -22,12 +22,12 @@
                     <h2>The Messager </h2>
                 </div>
                 <div class="profile-buttons">
+                    <button id="requestsBtn" class="icon-btn">🔔</button>
                     <button id="darkModeBtn" class="icon-btn">🌙</button>
                     <button id="logoutBtn" class="logout-btn">Logout</button>
                 </div>
             </div>
             
-            <!-- NEW: Universal Search Box -->
             <div class="add-contact-box">
                 <input type="text" id="searchInput" placeholder="Search users by name or email...">
                 <button id="searchBtn">🔍</button>
@@ -45,6 +45,16 @@
                 <div class="header-info">
                     <h2 id="chatUser">Select User</h2>
                     <span id="userStatus" class="user-status">Add a user to start chatting</span>
+                </div>
+                
+                <!-- NEW: Chat Dropdown Menu -->
+                <div class="chat-menu-container">
+                    <button id="chatMenuBtn" class="icon-btn">⋮</button>
+                    <div id="chatMenuDropdown" class="chat-menu-dropdown">
+                        <div class="menu-item" id="clearChatBtn">🗑️ Clear Chat</div>
+                        <div class="menu-item" id="deleteContactBtn">❌ Delete Contact</div>
+                        <div class="menu-item" id="blockUserBtn">🚫 Block User</div>
+                    </div>
                 </div>
             </div>
 

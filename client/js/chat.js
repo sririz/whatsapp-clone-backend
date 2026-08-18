@@ -28,6 +28,7 @@ const backBtn = document.getElementById("backBtn");
 const sidebarProfilePic = document.getElementById("sidebarProfilePic");
 const headerProfilePic = document.getElementById("headerProfilePic");
 const searchInput = document.getElementById("searchInput");
+const chatMenuDropdown = document.getElementById("chatMenuDropdown");
 
 const cropModal = document.getElementById("cropModal");
 const imageToCrop = document.getElementById("imageToCrop");
@@ -51,20 +52,16 @@ logoutBtn.addEventListener("click", () => {
 });
 
 // =========================
-// NEW: Universal Search Logic (Instagram Style)
+// Universal Search Logic
 // =========================
 let searchTimeout = null;
 searchInput.addEventListener("input", (e) => {
     const query = e.target.value.trim();
-    
-    // Clear previous timeout
     clearTimeout(searchTimeout);
     
     if (query === "") {
-        // If search is empty, show normal contact list
         loadUsers();
     } else {
-        // Debounce search to avoid spamming the server
         searchTimeout = setTimeout(async () => {
             try {
                 const response = await fetch(`https://themessager.duckdns.org/api/user/search?query=${query}`, {
@@ -79,7 +76,6 @@ searchInput.addEventListener("input", (e) => {
     }
 });
 
-// Function to display search results
 function displaySearchResults(users) {
     const userList = document.getElementById("userList");
     userList.innerHTML = "";
@@ -104,7 +100,6 @@ function displaySearchResults(users) {
             <button class="add-search-btn" data-email="${user.email}">Add</button>
         `;
         
-        // Attach click listener to the Add button
         div.querySelector(".add-search-btn").addEventListener("click", async (e) => {
             e.stopPropagation();
             const email = e.target.getAttribute("data-email");
@@ -115,7 +110,6 @@ function displaySearchResults(users) {
     });
 }
 
-// Function to add contact by email
 async function addContactByEmail(email) {
     try {
         const response = await fetch("https://themessager.duckdns.org/api/user/add-contact", {
@@ -125,16 +119,147 @@ async function addContactByEmail(email) {
         });
         const data = await response.json();
         if (data.success) {
-            alert("Contact added successfully!");
-            searchInput.value = ""; // Clear search
-            loadUsers(); // Reload contact list
+            alert("Chat request sent!"); // Updated message
+            searchInput.value = "";
+            loadUsers();
         } else {
             alert(data.message);
         }
     } catch (error) {
-        alert("Failed to add contact");
+        alert("Failed to send request");
     }
 }
+
+// =========================
+// NEW: Chat Requests Logic
+// =========================
+document.getElementById("requestsBtn").addEventListener("click", loadRequests);
+
+async function loadRequests() {
+    try {
+        const response = await fetch("https://themessager.duckdns.org/api/user/requests", {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.success) {
+            displayRequests(data.requests);
+        }
+    } catch (error) { console.log(error); }
+}
+
+function displayRequests(requests) {
+    const userList = document.getElementById("userList");
+    userList.innerHTML = "";
+    
+    if (requests.length === 0) {
+        userList.innerHTML = `<p style="text-align:center; color:#999; padding:20px;">No pending requests</p>`;
+        return;
+    }
+
+    requests.forEach(user => {
+        const div = document.createElement("div");
+        div.className = "user";
+        const userPicUrl = user.profilePic ? "https://themessager.duckdns.org" + user.profilePic : DEFAULT_AVATAR;
+        div.innerHTML = `
+            <img src="${userPicUrl}" class="user-pic" alt="Pic">
+            <div class="user-info">
+                <h3>${user.name}</h3>
+                <small style="color: gray">Wants to chat with you</small>
+            </div>
+            <div class="request-actions">
+                <button class="accept-btn" data-id="${user._id}">Accept</button>
+                <button class="decline-btn" data-id="${user._id}">Decline</button>
+            </div>
+        `;
+        
+        div.querySelector(".accept-btn").addEventListener("click", async (e) => {
+            e.stopPropagation();
+            await handleRequest(user._id, "accept");
+        });
+        
+        div.querySelector(".decline-btn").addEventListener("click", async (e) => {
+            e.stopPropagation();
+            await handleRequest(user._id, "decline");
+        });
+
+        userList.appendChild(div);
+    });
+}
+
+async function handleRequest(userId, action) {
+    const endpoint = action === "accept" ? "accept-request" : "decline-request";
+    try {
+        const response = await fetch(`https://themessager.duckdns.org/api/user/${endpoint}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ userId })
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert(data.message);
+            loadRequests(); // Refresh list
+        }
+    } catch (error) { alert("Failed"); }
+}
+
+// =========================
+// NEW: Chat Menu Logic (Block, Delete, Clear)
+// =========================
+document.getElementById("chatMenuBtn").addEventListener("click", () => {
+    chatMenuDropdown.style.display = chatMenuDropdown.style.display === "block" ? "none" : "block";
+});
+
+document.getElementById("clearChatBtn").addEventListener("click", async () => {
+    if (!selectedUser) return;
+    if (!confirm("Clear all messages in this chat?")) return;
+    try {
+        await fetch(`https://themessager.duckdns.org/api/message/clear-chat/${selectedUser._id}`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        document.getElementById("messages").innerHTML = "";
+        alert("Chat cleared!");
+    } catch (error) { alert("Failed to clear chat"); }
+    chatMenuDropdown.style.display = "none";
+});
+
+document.getElementById("deleteContactBtn").addEventListener("click", async () => {
+    if (!selectedUser) return;
+    if (!confirm("Delete this contact?")) return;
+    try {
+        await fetch("https://themessager.duckdns.org/api/user/delete-contact", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ userId: selectedUser._id })
+        });
+        alert("Contact deleted.");
+        selectedUser = null;
+        chatUserHeader.innerText = "Select User";
+        document.getElementById("messages").innerHTML = "";
+        chatContainer.classList.remove("show-chat");
+        loadUsers();
+    } catch (error) { alert("Failed to delete contact"); }
+    chatMenuDropdown.style.display = "none";
+});
+
+document.getElementById("blockUserBtn").addEventListener("click", async () => {
+    if (!selectedUser) return;
+    if (!confirm("Block this user?")) return;
+    try {
+        await fetch("https://themessager.duckdns.org/api/user/block", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ userId: selectedUser._id })
+        });
+        alert("User blocked.");
+        selectedUser = null;
+        chatUserHeader.innerText = "Select User";
+        document.getElementById("messages").innerHTML = "";
+        chatContainer.classList.remove("show-chat");
+        loadUsers();
+    } catch (error) { alert("Failed to block user"); }
+    chatMenuDropdown.style.display = "none";
+});
 
 // =========================
 // Mobile Back Button Logic
@@ -157,7 +282,6 @@ socket.on("disconnect", () => { console.log("🔴 Socket Disconnected"); });
 // Load Users
 // =========================
 async function loadUsers() {
-    // Only load normal list if search is empty
     if (searchInput.value.trim() !== "") return;
     
     try {
@@ -194,7 +318,6 @@ function displayUsers(users) {
         const unreadBadge = user.unreadCount > 0 ? `<span class="unread-badge">${user.unreadCount}</span>` : '';
         const userPicUrl = user.profilePic ? "https://themessager.duckdns.org" + user.profilePic : DEFAULT_AVATAR;
         
-        // NEW: Hide email! Only show Name, Online status, and Unread badge
         div.innerHTML = `
             <img src="${userPicUrl}" class="user-pic" alt="Pic">
             <div class="user-info">
@@ -457,7 +580,7 @@ function escapeHtml(text) {
 }
 
 // =========================
-// Display Message (with Ticks & Delete UI)
+// Display Message
 // =========================
 function displayMessage(messageObj) {
     const messages = document.getElementById("messages");
@@ -597,6 +720,7 @@ darkModeBtn.addEventListener("click", () => {
         darkModeBtn.innerText = "🌙";
     }
 });
+
 // =========================
 // Load My Own Profile Pic
 // =========================
@@ -614,6 +738,7 @@ async function loadMyProfile() {
     }
 }
 loadMyProfile();
+
 // =========================
 // Auto Refresh & Start
 // =========================

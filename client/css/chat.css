@@ -141,7 +141,6 @@ body {
 
 .user:hover { background: #eef2ff; }
 
-/* NEW: Small profile pics in sidebar list */
 .user-pic {
     width: 35px;
     height: 35px;
@@ -197,6 +196,7 @@ body {
     align-items: center;
     gap: 15px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    justify-content: space-between;
 }
 
 .back-btn {
@@ -211,6 +211,7 @@ body {
 .header-info {
     display: flex;
     flex-direction: column;
+    flex: 1;
 }
 
 .chat-header h2 {
@@ -223,6 +224,31 @@ body {
     font-size: 0.8rem;
     color: gray;
 }
+
+/* NEW: Chat Dropdown Menu */
+.chat-menu-container {
+    position: relative;
+}
+.chat-menu-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 30px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 100;
+    width: 160px;
+}
+.menu-item {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+.menu-item:last-child { border-bottom: none; }
+.menu-item:hover { background: #f0f2f5; }
 
 /* Messages */
 .messages {
@@ -367,9 +393,7 @@ body {
     .message { max-width: 80%; }
 }
 
-/* ========================= */
-/* Profile Pictures Styling  */
-/* ========================= */
+/* Profile Pictures Styling */
 .profile-pic-label { cursor: pointer; }
 .profile-pic {
     width: 40px;
@@ -385,9 +409,7 @@ body {
     object-fit: cover;
 }
 
-/* ========================= */
-/* Image Crop Modal Styling  */
-/* ========================= */
+/* Image Crop Modal Styling */
 .modal {
     display: none;
     position: fixed;
@@ -441,9 +463,45 @@ body {
     font-weight: bold;
 }
 
-/* ========================= */
-/* Dark Mode Theme           */
-/* ========================= */
+/* Search Add Button & Request Buttons */
+.add-search-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+.add-search-btn:hover { background: #5568d3; }
+
+.request-actions {
+    display: flex;
+    gap: 5px;
+}
+.accept-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+.decline-btn {
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Dark Mode Theme */
 body.dark-mode {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
 }
@@ -468,17 +526,6 @@ body.dark-mode .message-box { background: #1e1e2f; border-top: 1px solid #2d2d44
 body.dark-mode #messageInput { background: #2d2d44; color: white; border-color: #3d3d5c; }
 body.dark-mode .message.received .bubble { background: #2d2d44; color: #e0e0e0; box-shadow: none; }
 body.dark-mode .message-actions { background: #2d2d44; border: 1px solid #3d3d5c; }
-/* Search Add Button */
-.add-search-btn {
-    background: #667eea;
-    color: white;
-    border: none;
-    padding: 5px 15px;
-    border-radius: 15px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: bold;
-}
-.add-search-btn:hover {
-    background: #5568d3;
-}
+body.dark-mode .chat-menu-dropdown { background: #2d2d44; border: 1px solid #3d3d5c; }
+body.dark-mode .menu-item { color: white; border-bottom: 1px solid #3d3d5c; }
+body.dark-mode .menu-item:hover { background: #3d3d5c; }
