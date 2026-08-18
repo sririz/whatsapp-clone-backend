@@ -96,7 +96,7 @@ document.getElementById("registerForm").addEventListener("submit", async(e) => {
         }
     }
     catch(error){
-        console.log(error);
+        co+nsole.log(error);
         alert("Server Error");
     }
 });
