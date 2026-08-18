@@ -33,16 +33,22 @@ const userSchema = new mongoose.Schema(
         type: Date,
         default: null
     },
-    // =========================
     // Contacts List
-    // =========================
     contacts: [{ 
         type: mongoose.Schema.Types.ObjectId, 
         ref: "User" 
     }],
-    // =========================
-    // NEW: OTP & Verification Fields
-    // =========================
+    // NEW: Chat Requests (People who want to chat with you)
+    chatRequests: [{ 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "User" 
+    }],
+    // NEW: Blocked Users
+    blockedUsers: [{ 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "User" 
+    }],
+    // OTP & Verification Fields
     isVerified: {
         type: Boolean,
         default: false

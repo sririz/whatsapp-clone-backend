@@ -2,11 +2,19 @@ const express = require("express");
 const router = express.Router();
 const protect = require("../middleware/authMiddleware");
 const Message = require("../models/Message");
+const User = require("../models/User");
 
 // Send a new message
 router.post("/send", protect, async (req, res) => {
     try {
         const { receiver, message } = req.body;
+        
+        // NEW: Check if receiver blocked the sender
+        const receiverUser = await User.findById(receiver);
+        if (receiverUser.blockedUsers.includes(req.user.id)) {
+            return res.status(403).json({ success: false, message: "You cannot message this user." });
+        }
+
         const newMessage = await Message.create({ sender: req.user.id, receiver, message });
         res.json({ success: true, data: newMessage });
     } catch (error) {
@@ -22,7 +30,7 @@ router.get("/:userId", protect, async (req, res) => {
                 { sender: req.user.id, receiver: req.params.userId },
                 { sender: req.params.userId, receiver: req.user.id }
             ],
-            deletedFor: { $ne: req.user.id } // Hide messages I deleted for myself
+            deletedFor: { $ne: req.user.id }
         }).sort({ createdAt: 1 });
 
         res.json({ success: true, data: messages });
@@ -55,6 +63,26 @@ router.delete("/:id", protect, async (req, res) => {
         }
 
         res.json({ success: true, message: "Message deleted" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// NEW: CLEAR CHAT
+router.post("/clear-chat/:userId", protect, async (req, res) => {
+    try {
+        // Add current user to deletedFor array of all messages between these two users
+        await Message.updateMany(
+            {
+                $or: [
+                    { sender: req.user.id, receiver: req.params.userId },
+                    { sender: req.params.userId, receiver: req.user.id }
+                ]
+            },
+            { $addToSet: { deletedFor: req.user.id } }
+        );
+
+        res.json({ success: true, message: "Chat cleared successfully" });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error" });
     }

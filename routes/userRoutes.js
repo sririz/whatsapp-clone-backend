@@ -12,7 +12,17 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// GET CONTACTS + CHAT HISTORY + UNREAD COUNTS
+// GET MY PROFILE
+router.get("/me", protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("name profilePic");
+        res.json({ success: true, user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// GET CONTACTS + UNREAD COUNTS
 router.get("/", protect, async (req, res) => {
     try {
         const userId = new mongoose.Types.ObjectId(req.user.id);
@@ -51,20 +61,19 @@ router.get("/", protect, async (req, res) => {
     }
 });
 
-// NEW: SEARCH ALL USERS BY NAME OR EMAIL (Instagram Style)
+// SEARCH USERS
 router.get("/search", protect, async (req, res) => {
     const keyword = req.query.query || "";
     if (!keyword) return res.json({ success: true, users: [] });
 
     try {
-        // Find users whose name or email matches the keyword, excluding yourself
         const users = await User.find({
             $or: [
                 { name: { $regex: keyword, $options: "i" } },
                 { email: { $regex: keyword, $options: "i" } }
             ],
             _id: { $ne: req.user.id }
-        }).select("name profilePic isOnline about");
+        }).select("name email profilePic isOnline about");
 
         res.json({ success: true, users });
     } catch (error) {
@@ -72,22 +81,124 @@ router.get("/search", protect, async (req, res) => {
     }
 });
 
-// ADD A NEW CONTACT BY EMAIL
+// ADD CONTACT (Now creates a Chat Request instead of adding directly)
 router.post("/add-contact", protect, async (req, res) => {
     try {
         const { email } = req.body;
         const contactToAdd = await User.findOne({ email: email.toLowerCase() });
-        if (!contactToAdd) return res.status(404).json({ success: false, message: "User not found with that email" });
-
+        if (!contactToAdd) return res.status(404).json({ success: false, message: "User not found" });
         if (contactToAdd._id.toString() === req.user.id) return res.status(400).json({ success: false, message: "You cannot add yourself!" });
 
-        const currentUser = await User.findById(req.user.id);
-        if (!currentUser.contacts.includes(contactToAdd._id)) {
-            currentUser.contacts.push(contactToAdd._id);
-            await currentUser.save();
+        // NEW: Check if already blocked by the other user
+        if (contactToAdd.blockedUsers.includes(req.user.id)) {
+            return res.status(403).json({ success: false, message: "Cannot send request to this user." });
         }
 
-        res.json({ success: true, message: "Contact added successfully!" });
+        // NEW: Add to their chatRequests list instead of contacts
+        if (!contactToAdd.chatRequests.includes(req.user.id)) {
+            contactToAdd.chatRequests.push(req.user.id);
+            await contactToAdd.save();
+        }
+
+        res.json({ success: true, message: "Chat request sent!" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// NEW: GET CHAT REQUESTS
+router.get("/requests", protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).populate("chatRequests", "name profilePic email isOnline");
+        res.json({ success: true, requests: user.chatRequests });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// NEW: ACCEPT CHAT REQUEST
+router.post("/accept-request", protect, async (req, res) => {
+    try {
+        const { userId } = req.body;
+        
+        // Remove from my requests
+        const me = await User.findById(req.user.id);
+        me.chatRequests = me.chatRequests.filter(id => id.toString() !== userId);
+        if (!me.contacts.includes(userId)) {
+            me.contacts.push(userId);
+        }
+        await me.save();
+
+        // Add me to their contacts
+        const otherUser = await User.findById(userId);
+        if (!otherUser.contacts.includes(req.user.id)) {
+            otherUser.contacts.push(req.user.id);
+            await otherUser.save();
+        }
+
+        res.json({ success: true, message: "Request accepted!" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// NEW: DECLINE CHAT REQUEST
+router.post("/decline-request", protect, async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const me = await User.findById(req.user.id);
+        me.chatRequests = me.chatRequests.filter(id => id.toString() !== userId);
+        await me.save();
+
+        res.json({ success: true, message: "Request declined." });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// NEW: BLOCK USER
+router.post("/block", protect, async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const me = await User.findById(req.user.id);
+        
+        // Remove from contacts
+        me.contacts = me.contacts.filter(id => id.toString() !== userId);
+        // Add to blocked
+        if (!me.blockedUsers.includes(userId)) {
+            me.blockedUsers.push(userId);
+        }
+        await me.save();
+
+        res.json({ success: true, message: "User blocked." });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// NEW: UNBLOCK USER
+router.post("/unblock", protect, async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const me = await User.findById(req.user.id);
+        me.blockedUsers = me.blockedUsers.filter(id => id.toString() !== userId);
+        await me.save();
+
+        res.json({ success: true, message: "User unblocked." });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// NEW: DELETE CONTACT
+router.post("/delete-contact", protect, async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const me = await User.findById(req.user.id);
+        me.contacts = me.contacts.filter(id => id.toString() !== userId);
+        await me.save();
+
+        res.json({ success: true, message: "Contact deleted." });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error" });
     }
