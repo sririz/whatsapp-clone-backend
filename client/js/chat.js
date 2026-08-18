@@ -597,7 +597,23 @@ darkModeBtn.addEventListener("click", () => {
         darkModeBtn.innerText = "🌙";
     }
 });
-
+// =========================
+// Load My Own Profile Pic
+// =========================
+async function loadMyProfile() {
+    try {
+        const response = await fetch("https://themessager.duckdns.org/api/user/me", {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.success && data.user.profilePic) {
+            sidebarProfilePic.src = "https://themessager.duckdns.org" + data.user.profilePic + "?t=" + new Date().getTime();
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+loadMyProfile();
 // =========================
 // Auto Refresh & Start
 // =========================
