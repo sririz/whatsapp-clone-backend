@@ -4,6 +4,18 @@ const protect = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const Message = require("../models/Message");
 const mongoose = require("mongoose");
+const multer = require("multer"); // NEW: Import Multer for file uploads
+
+// NEW: Multer Configuration for Profile Pictures
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "uploads/"); // Files will be saved in the 'uploads' folder
+    },
+    filename: function (req, file, cb) {
+        cb(null, "user-" + req.user.id + "-" + Date.now() + ".jpg");
+    }
+});
+const upload = multer({ storage: storage });
 
 // GET CONTACTS + CHAT HISTORY + UNREAD COUNTS
 router.get("/", protect, async (req, res) => {
@@ -27,9 +39,9 @@ router.get("/", protect, async (req, res) => {
             if (msg.receiver.toString() !== req.user.id) userIds.add(msg.receiver.toString());
         });
 
-        // 3. Fetch details for all these users
+        // 3. Fetch details for all these users (ADDED "profilePic" to select)
         const finalUsers = await User.find({ _id: { $in: Array.from(userIds) } })
-            .select("name email isOnline lastSeen");
+            .select("name email isOnline lastSeen profilePic");
 
         // 4. Count unseen messages for each user
         const unreadCounts = await Message.aggregate([
@@ -70,6 +82,23 @@ router.post("/add-contact", protect, async (req, res) => {
         }
 
         res.json({ success: true, message: "Contact added successfully!" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// NEW: UPLOAD PROFILE PICTURE
+router.post("/upload-profile", protect, upload.single("image"), async (req, res) => {
+    try {
+        // Check if a file was uploaded
+        if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
+
+        // Find the user and save the file path
+        const user = await User.findById(req.user.id);
+        user.profilePic = "/uploads/" + req.file.filename;
+        await user.save();
+
+        res.json({ success: true, message: "Profile picture updated!", profilePic: user.profilePic });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error" });
     }

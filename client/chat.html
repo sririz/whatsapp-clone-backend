@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Messager</title>
     <link rel="stylesheet" href="css/chat.css">
 </head>
-
 <body>
 
     <div class="chat-container">
@@ -15,11 +13,20 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="profile">
-                <h2>The Messager </h2>
-                <button id="logoutBtn" class="logout-btn">Logout</button>
+                <div class="profile-info">
+                    <label for="fileInput" class="profile-pic-label">
+                        <img src="https://via.placeholder.com/40" id="sidebarProfilePic" class="profile-pic" alt="Profile">
+                    </label>
+                    <input type="file" id="fileInput" hidden accept="image/*">
+                    <h2>The Messager </h2>
+                </div>
+                <div class="profile-buttons">
+                    <button id="darkModeBtn" class="icon-btn">🌙</button>
+                    <button id="logoutBtn" class="logout-btn">Logout</button>
+                </div>
             </div>
             
-            <!-- NEW: Add Contact Box -->
+            <!-- Add Contact Box -->
             <div class="add-contact-box">
                 <input type="email" id="contactEmail" placeholder="Add user by email...">
                 <button id="addContactBtn">+</button>
@@ -33,7 +40,7 @@
             
             <div class="chat-header">
                 <button id="backBtn" class="back-btn">&larr;</button>
-                
+                <img src="https://via.placeholder.com/35" id="headerProfilePic" class="header-pic" alt="Pic">
                 <div class="header-info">
                     <h2 id="chatUser">Select User</h2>
                     <span id="userStatus" class="user-status">Add a user to start chatting</span>
@@ -51,9 +58,11 @@
 
     </div>
 
+    <!-- Socket.IO Client FIRST -->
     <script src="js/socket.io.min.js"></script>
+
+    <!-- Chat JavaScript -->
     <script src="js/chat.js"></script>
 
 </body>
-
 </html>

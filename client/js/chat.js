@@ -23,6 +23,8 @@ const chatUserHeader = document.getElementById("chatUser");
 const userStatusSpan = document.getElementById("userStatus");
 const logoutBtn = document.getElementById("logoutBtn");
 const backBtn = document.getElementById("backBtn");
+const sidebarProfilePic = document.getElementById("sidebarProfilePic");
+const headerProfilePic = document.getElementById("headerProfilePic");
 
 // =========================
 // Logout Logic
@@ -96,7 +98,9 @@ async function loadUsers() {
                 const updatedUser = data.users.find(u => u._id === selectedUser._id);
                 if (updatedUser) {
                     selectedUser.lastSeen = updatedUser.lastSeen;
+                    selectedUser.profilePic = updatedUser.profilePic; // Update pic
                     updateUserStatus(selectedUser);
+                    if (updatedUser.profilePic) headerProfilePic.src = "https://themessager.duckdns.org" + updatedUser.profilePic;
                 }
             }
         }
@@ -132,6 +136,14 @@ async function selectUser(user) {
     selectedUser = user;
     chatUserHeader.innerText = user.name;
     updateUserStatus(user);
+    
+    // Set header profile pic
+    if (user.profilePic) {
+        headerProfilePic.src = "https://themessager.duckdns.org" + user.profilePic;
+    } else {
+        headerProfilePic.src = "https://via.placeholder.com/35";
+    }
+
     document.getElementById("messages").innerHTML = "";
     chatContainer.classList.add("show-chat");
     await loadMessages(user._id);
@@ -214,7 +226,7 @@ async function sendMessage() {
 }
 
 // =========================
-// NEW: Delete Message Function
+// Delete Message Function
 // =========================
 window.deleteMessage = async function(messageId, type) {
     if (!confirm(`Delete this message for ${type}?`)) return;
@@ -312,7 +324,7 @@ socket.on("messageSeen", (data) => {
 });
 
 // =========================
-// NEW: Receive Delete Event
+// Receive Delete Event
 // =========================
 socket.on("messageDeleted", (data) => {
     const msgDiv = document.querySelector(`[data-message-id="${data.messageId}"]`);
@@ -397,7 +409,6 @@ function displayMessage(messageObj) {
         else tickHtml = `<span class="tick sent">✓</span>`;
     }
 
-    // NEW: Delete Actions UI
     let actionsHtml = "";
     if (messageId && !messageObj.isDeleted) {
         if (senderId == currentUser.id) {
@@ -427,6 +438,55 @@ function displayMessage(messageObj) {
     messages.appendChild(div);
     messages.scrollTop = messages.scrollHeight;
 }
+
+// =========================
+// Profile Picture Upload
+// =========================
+document.getElementById("fileInput").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+        const response = await fetch("https://themessager.duckdns.org/api/user/upload-profile", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            sidebarProfilePic.src = "https://themessager.duckdns.org" + data.profilePic + "?t=" + new Date().getTime();
+            alert("Profile picture updated!");
+        }
+    } catch (error) {
+        alert("Failed to upload picture");
+    }
+});
+
+// =========================
+// Dark Mode Toggle
+// =========================
+const darkModeBtn = document.getElementById("darkModeBtn");
+const body = document.body;
+
+if (localStorage.getItem("darkMode") === "enabled") {
+    body.classList.add("dark-mode");
+    darkModeBtn.innerText = "☀️";
+}
+
+darkModeBtn.addEventListener("click", () => {
+    body.classList.toggle("dark-mode");
+    
+    if (body.classList.contains("dark-mode")) {
+        localStorage.setItem("darkMode", "enabled");
+        darkModeBtn.innerText = "☀️";
+    } else {
+        localStorage.setItem("darkMode", "disabled");
+        darkModeBtn.innerText = "🌙";
+    }
+});
 
 // =========================
 // Auto Refresh & Start

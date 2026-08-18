@@ -26,7 +26,7 @@ body {
 /* Sidebar */
 .sidebar {
     width: 30%;
-    background: #f9fafc; /* Light purple-gray tint */
+    background: #f9fafc;
     border-right: 1px solid #eef2ff;
     display: flex;
     flex-direction: column;
@@ -42,10 +42,30 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .profile h2 {
     font-size: 1.2rem;
-    color: #667eea; /* Purple text */
+    color: #667eea;
     font-weight: 700;
+}
+
+.profile-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 5px;
 }
 
 .logout-btn {
@@ -62,9 +82,7 @@ body {
 
 .logout-btn:hover { background: #e02f3f; }
 
-/* ========================= */
-/* NEW: Add Contact Box      */
-/* ========================= */
+/* Add Contact Box */
 .add-contact-box {
     display: flex;
     padding: 12px;
@@ -106,17 +124,6 @@ body {
 
 .add-contact-box button:hover { background: #5568d3; }
 
-/* Keep old search user styles just in case, but hidden if not used */
-#searchUser {
-    padding: 12px 15px;
-    margin: 15px;
-    border: 1px solid #e0e7ff;
-    border-radius: 20px;
-    outline: none;
-    font-size: 14px;
-    background: #f9fafc;
-}
-
 #userList {
     flex: 1;
     overflow-y: auto;
@@ -127,9 +134,14 @@ body {
     border-bottom: 1px solid #eef2ff;
     cursor: pointer;
     transition: background 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.user:hover { background: #eef2ff; } /* Light purple hover */
+.user:hover { background: #eef2ff; }
+
+.user-info { flex: 1; }
 
 .user h3 {
     font-size: 1rem;
@@ -148,12 +160,24 @@ body {
     margin-top: 5px;
 }
 
+.unread-badge {
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    padding: 4px 9px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+    margin-left: 10px;
+}
+
 /* Chat Area */
 .chat-area {
     width: 70%;
     display: flex;
     flex-direction: column;
-    background-color: #f5f7fa; /* Clean light gray-purple background */
+    background-color: #f5f7fa;
 }
 
 .chat-header {
@@ -166,14 +190,13 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-/* Back Button */
 .back-btn {
     background: transparent;
     border: none;
     font-size: 1.5rem;
     color: #667eea;
     cursor: pointer;
-    display: none; /* Hidden on desktop */
+    display: none;
 }
 
 .header-info {
@@ -205,6 +228,7 @@ body {
 .message {
     max-width: 60%;
     display: flex;
+    position: relative;
 }
 
 .message.sent { align-self: flex-end; }
@@ -218,14 +242,12 @@ body {
     position: relative;
 }
 
-/* Sent message is now Purple */
 .message.sent .bubble { 
     background: #667eea; 
     color: white;
     border-bottom-right-radius: 2px;
 }
 
-/* Received message is White */
 .message.received .bubble { 
     background: #ffffff; 
     color: #333;
@@ -247,16 +269,14 @@ body {
     gap: 4px;
 }
 
-/* Adjust text colors for the purple bubble */
 .message.sent .bubble p { color: white; }
 .message.sent .bubble small { color: rgba(255,255,255,0.8); }
 .message.received .bubble small { color: #667781; }
 
-/* Ticks Styling */
 .tick { font-size: 0.75rem; }
 .tick.sent { color: rgba(255,255,255,0.8); }
 .tick.delivered { color: rgba(255,255,255,0.8); }
-.tick.seen { color: #4ade80; } /* Bright green tick on purple bubble */
+.tick.seen { color: #4ade80; }
 
 /* Message Box */
 .message-box {
@@ -297,74 +317,7 @@ body {
 
 #sendBtn:hover { background: #5568d3; }
 
-
-/* ========================================= */
-/* Mobile Responsive Design                  */
-/* ========================================= */
-@media (max-width: 768px) {
-    .chat-container {
-        width: 100%;
-        height: 100vh;
-        border-radius: 0;
-    }
-
-    /* Show back button on mobile */
-    .back-btn {
-        display: block;
-    }
-
-    /* Sidebar takes full screen by default */
-    .sidebar {
-        width: 100%;
-    }
-
-    /* Chat area takes full screen, but is hidden by default */
-    .chat-area {
-        width: 100%;
-        display: none;
-    }
-
-    /* When a user is selected, JS adds .show-chat */
-    .chat-container.show-chat .sidebar {
-        display: none;
-    }
-    .chat-container.show-chat .chat-area {
-        display: flex;
-    }
-
-    /* Make messages slightly wider on mobile */
-    .message {
-        max-width: 80%;
-    }
-}
-/* ========================= */
-/* Unread Message Badge      */
-/* ========================= */
-.user {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.user-info {
-    flex: 1;
-}
-
-.unread-badge {
-    background: #667eea;
-    color: white;
-    border-radius: 50%;
-    padding: 4px 9px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    min-width: 20px;
-    text-align: center;
-    margin-left: 10px;
-}
 /* Delete Message Actions */
-.message {
-    position: relative;
-}
 .message-actions {
     display: none;
     position: absolute;
@@ -390,3 +343,64 @@ body {
 .message:hover .message-actions {
     display: block;
 }
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+    .chat-container {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+    .back-btn { display: block; }
+    .sidebar { width: 100%; }
+    .chat-area { width: 100%; display: none; }
+    .chat-container.show-chat .sidebar { display: none; }
+    .chat-container.show-chat .chat-area { display: flex; }
+    .message { max-width: 80%; }
+}
+
+/* ========================= */
+/* Profile Pictures Styling  */
+/* ========================= */
+.profile-pic-label { cursor: pointer; }
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #667eea;
+}
+.header-pic {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* ========================= */
+/* Dark Mode Theme           */
+/* ========================= */
+body.dark-mode {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+body.dark-mode .chat-container {
+    background: #1e1e2f;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+}
+body.dark-mode .sidebar { background: #1e1e2f; border-right: 1px solid #2d2d44; }
+body.dark-mode .profile { background: #16162a; border-bottom: 1px solid #2d2d44; }
+body.dark-mode .profile h2 { color: #a5b4fc; }
+body.dark-mode .add-contact-box { background: #16162a; border-bottom: 1px solid #2d2d44; }
+body.dark-mode .add-contact-box input { background: #2d2d44; border-color: #3d3d5c; color: white; }
+body.dark-mode #userList { background: #1e1e2f; }
+body.dark-mode .user { border-bottom: 1px solid #2d2d44; }
+body.dark-mode .user:hover { background: #2d2d44; }
+body.dark-mode .user h3 { color: #e0e0e0; }
+body.dark-mode .user p { color: #999; }
+body.dark-mode .chat-area { background-color: #12121f; }
+body.dark-mode .chat-header { background: #1e1e2f; border-bottom: 1px solid #2d2d44; }
+body.dark-mode .chat-header h2 { color: #e0e0e0; }
+body.dark-mode .message-box { background: #1e1e2f; border-top: 1px solid #2d2d44; }
+body.dark-mode #messageInput { background: #2d2d44; color: white; border-color: #3d3d5c; }
+body.dark-mode .message.received .bubble { background: #2d2d44; color: #e0e0e0; box-shadow: none; }
+body.dark-mode .message-actions { background: #2d2d44; border: 1px solid #3d3d5c; }

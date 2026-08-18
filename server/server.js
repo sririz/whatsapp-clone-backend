@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const http = require("http");
 const cors = require("cors");
+const path = require("path"); // NEW: Import path for file paths
 const { Server } = require("socket.io");
 
 // Import Security Packages
@@ -70,6 +71,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// NEW: Serve uploaded files (Profile Pictures) statically
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // 4. Rate Limiter to prevent Brute Force attacks on Auth routes
 const authLimiter = rateLimit({
