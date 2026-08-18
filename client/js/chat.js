@@ -13,6 +13,9 @@ const currentUser = JSON.parse(localStorage.getItem("user"));
 let selectedUser = null;
 let typingTimeout = null;
 
+// NEW: Default Avatar SVG (Gray circle with user icon)
+const DEFAULT_AVATAR = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2NjYyI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==";
+
 // =========================
 // DOM Elements
 // =========================
@@ -25,6 +28,17 @@ const logoutBtn = document.getElementById("logoutBtn");
 const backBtn = document.getElementById("backBtn");
 const sidebarProfilePic = document.getElementById("sidebarProfilePic");
 const headerProfilePic = document.getElementById("headerProfilePic");
+
+// NEW: Cropper Modal Elements
+const cropModal = document.getElementById("cropModal");
+const imageToCrop = document.getElementById("imageToCrop");
+const cropAndUploadBtn = document.getElementById("cropAndUploadBtn");
+const cancelCropBtn = document.getElementById("cancelCropBtn");
+let cropper;
+
+// Set Default Avatars on load
+sidebarProfilePic.src = DEFAULT_AVATAR;
+headerProfilePic.src = DEFAULT_AVATAR;
 
 // =========================
 // Logout Logic
@@ -98,9 +112,15 @@ async function loadUsers() {
                 const updatedUser = data.users.find(u => u._id === selectedUser._id);
                 if (updatedUser) {
                     selectedUser.lastSeen = updatedUser.lastSeen;
-                    selectedUser.profilePic = updatedUser.profilePic; // Update pic
+                    selectedUser.profilePic = updatedUser.profilePic;
                     updateUserStatus(selectedUser);
-                    if (updatedUser.profilePic) headerProfilePic.src = "https://themessager.duckdns.org" + updatedUser.profilePic;
+                    
+                    // Update header pic if exists
+                    if (updatedUser.profilePic) {
+                        headerProfilePic.src = "https://themessager.duckdns.org" + updatedUser.profilePic;
+                    } else {
+                        headerProfilePic.src = DEFAULT_AVATAR;
+                    }
                 }
             }
         }
@@ -114,7 +134,12 @@ function displayUsers(users) {
         const div = document.createElement("div");
         div.className = "user";
         const unreadBadge = user.unreadCount > 0 ? `<span class="unread-badge">${user.unreadCount}</span>` : '';
+        
+        // NEW: Use default avatar if no profilePic
+        const userPicUrl = user.profilePic ? "https://themessager.duckdns.org" + user.profilePic : DEFAULT_AVATAR;
+        
         div.innerHTML = `
+            <img src="${userPicUrl}" class="user-pic" alt="Pic">
             <div class="user-info">
                 <h3>${user.name}</h3>
                 <p>${user.email}</p>
@@ -141,7 +166,7 @@ async function selectUser(user) {
     if (user.profilePic) {
         headerProfilePic.src = "https://themessager.duckdns.org" + user.profilePic;
     } else {
-        headerProfilePic.src = "https://via.placeholder.com/35";
+        headerProfilePic.src = DEFAULT_AVATAR;
     }
 
     document.getElementById("messages").innerHTML = "";
@@ -440,29 +465,63 @@ function displayMessage(messageObj) {
 }
 
 // =========================
-// Profile Picture Upload
+// NEW: Profile Picture Crop & Upload
 // =========================
-document.getElementById("fileInput").addEventListener("change", async (e) => {
+document.getElementById("fileInput").addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-        const response = await fetch("https://themessager.duckdns.org/api/user/upload-profile", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        imageToCrop.src = event.target.result;
+        cropModal.style.display = "flex";
+        
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(imageToCrop, {
+            aspectRatio: 1 / 1,
+            viewMode: 1,
+            autoCropArea: 1
         });
-        const data = await response.json();
-        if (data.success) {
-            sidebarProfilePic.src = "https://themessager.duckdns.org" + data.profilePic + "?t=" + new Date().getTime();
-            alert("Profile picture updated!");
+    };
+    reader.readAsDataURL(file);
+});
+
+cropAndUploadBtn.addEventListener("click", async () => {
+    if (!cropper) return;
+    
+    const canvas = cropper.getCroppedCanvas({
+        width: 200,
+        height: 200,
+    });
+    
+    canvas.toBlob(async (blob) => {
+        if (!blob) return alert("Failed to crop image");
+        
+        const formData = new FormData();
+        formData.append("image", blob, "profile.jpg");
+
+        try {
+            const response = await fetch("https://themessager.duckdns.org/api/user/upload-profile", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData
+            });
+            const data = await response.json();
+            if (data.success) {
+                sidebarProfilePic.src = "https://themessager.duckdns.org" + data.profilePic + "?t=" + new Date().getTime();
+                cropModal.style.display = "none";
+                if (cropper) cropper.destroy();
+                alert("Profile picture updated!");
+            }
+        } catch (error) {
+            alert("Failed to upload picture");
         }
-    } catch (error) {
-        alert("Failed to upload picture");
-    }
+    }, "image/jpeg");
+});
+
+cancelCropBtn.addEventListener("click", () => {
+    cropModal.style.display = "none";
+    if (cropper) cropper.destroy();
 });
 
 // =========================

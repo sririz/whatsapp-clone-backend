@@ -82,7 +82,6 @@ body {
 
 .logout-btn:hover { background: #e02f3f; }
 
-/* Add Contact Box */
 .add-contact-box {
     display: flex;
     padding: 12px;
@@ -137,9 +136,19 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
 }
 
 .user:hover { background: #eef2ff; }
+
+/* NEW: Small profile pics in sidebar list */
+.user-pic {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #ddd;
+}
 
 .user-info { flex: 1; }
 
@@ -278,7 +287,6 @@ body {
 .tick.delivered { color: rgba(255,255,255,0.8); }
 .tick.seen { color: #4ade80; }
 
-/* Message Box */
 .message-box {
     padding: 15px;
     background: #ffffff;
@@ -375,6 +383,62 @@ body {
     height: 35px;
     border-radius: 50%;
     object-fit: cover;
+}
+
+/* ========================= */
+/* Image Crop Modal Styling  */
+/* ========================= */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+}
+.modal-content h3 {
+    margin-bottom: 15px;
+    color: #667eea;
+}
+#imageToCrop {
+    max-width: 100%;
+    height: 300px;
+}
+.modal-buttons {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+.btn-primary {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-cancel {
+    background: #e0e0e0;
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
 }
 
 /* ========================= */
