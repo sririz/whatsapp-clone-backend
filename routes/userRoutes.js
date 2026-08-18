@@ -4,16 +4,11 @@ const protect = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const Message = require("../models/Message");
 const mongoose = require("mongoose");
-const multer = require("multer"); // NEW: Import Multer for file uploads
+const multer = require("multer");
 
-// NEW: Multer Configuration for Profile Pictures
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "uploads/"); // Files will be saved in the 'uploads' folder
-    },
-    filename: function (req, file, cb) {
-        cb(null, "user-" + req.user.id + "-" + Date.now() + ".jpg");
-    }
+    destination: function (req, file, cb) { cb(null, "uploads/"); },
+    filename: function (req, file, cb) { cb(null, "user-" + req.user.id + "-" + Date.now() + ".jpg"); }
 });
 const upload = multer({ storage: storage });
 
@@ -21,15 +16,12 @@ const upload = multer({ storage: storage });
 router.get("/", protect, async (req, res) => {
     try {
         const userId = new mongoose.Types.ObjectId(req.user.id);
-
-        // 1. Get users I explicitly added
         const user = await User.findById(userId);
         let userIds = new Set();
         if (user && user.contacts) {
             user.contacts.forEach(c => userIds.add(c.toString()));
         }
 
-        // 2. Get users I have a chat history with
         const messages = await Message.find({
             $or: [{ sender: userId }, { receiver: userId }]
         }).select('sender receiver');
@@ -39,29 +31,43 @@ router.get("/", protect, async (req, res) => {
             if (msg.receiver.toString() !== req.user.id) userIds.add(msg.receiver.toString());
         });
 
-        // 3. Fetch details for all these users (ADDED "profilePic" to select)
         const finalUsers = await User.find({ _id: { $in: Array.from(userIds) } })
-            .select("name email isOnline lastSeen profilePic");
+            .select("name email isOnline lastSeen profilePic about");
 
-        // 4. Count unseen messages for each user
         const unreadCounts = await Message.aggregate([
             { $match: { receiver: userId, seen: false } },
             { $group: { _id: "$sender", count: { $sum: 1 } } }
         ]);
 
-        // 5. Attach unreadCount to users
         const usersWithCounts = finalUsers.map(u => {
             const countObj = unreadCounts.find(c => c._id.toString() === u._id.toString());
-            return {
-                ...u.toObject(),
-                unreadCount: countObj ? countObj.count : 0
-            };
+            return { ...u.toObject(), unreadCount: countObj ? countObj.count : 0 };
         });
 
         res.json({ success: true, users: usersWithCounts });
-
     } catch (error) {
         console.error("Error fetching contacts:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// NEW: SEARCH ALL USERS BY NAME OR EMAIL (Instagram Style)
+router.get("/search", protect, async (req, res) => {
+    const keyword = req.query.query || "";
+    if (!keyword) return res.json({ success: true, users: [] });
+
+    try {
+        // Find users whose name or email matches the keyword, excluding yourself
+        const users = await User.find({
+            $or: [
+                { name: { $regex: keyword, $options: "i" } },
+                { email: { $regex: keyword, $options: "i" } }
+            ],
+            _id: { $ne: req.user.id }
+        }).select("name profilePic isOnline about");
+
+        res.json({ success: true, users });
+    } catch (error) {
         res.status(500).json({ success: false, message: "Server Error" });
     }
 });
@@ -87,17 +93,13 @@ router.post("/add-contact", protect, async (req, res) => {
     }
 });
 
-// NEW: UPLOAD PROFILE PICTURE
+// UPLOAD PROFILE PICTURE
 router.post("/upload-profile", protect, upload.single("image"), async (req, res) => {
     try {
-        // Check if a file was uploaded
         if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
-
-        // Find the user and save the file path
         const user = await User.findById(req.user.id);
         user.profilePic = "/uploads/" + req.file.filename;
         await user.save();
-
         res.json({ success: true, message: "Profile picture updated!", profilePic: user.profilePic });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error" });

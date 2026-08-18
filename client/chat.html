@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Messager</title>
     <link rel="stylesheet" href="css/chat.css">
-    <!-- NEW: Cropper.js CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
@@ -28,10 +27,10 @@
                 </div>
             </div>
             
-            <!-- Add Contact Box -->
+            <!-- NEW: Universal Search Box -->
             <div class="add-contact-box">
-                <input type="email" id="contactEmail" placeholder="Add user by email...">
-                <button id="addContactBtn">+</button>
+                <input type="text" id="searchInput" placeholder="Search users by name or email...">
+                <button id="searchBtn">🔍</button>
             </div>
             
             <div id="userList"></div>
@@ -60,7 +59,6 @@
 
     </div>
 
-    <!-- NEW: Crop Image Modal -->
     <div id="cropModal" class="modal">
         <div class="modal-content">
             <h3>Crop your photo</h3>
@@ -72,11 +70,8 @@
         </div>
     </div>
 
-    <!-- Socket.IO Client -->
     <script src="js/socket.io.min.js"></script>
-    <!-- NEW: Cropper.js JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-    <!-- Chat JavaScript -->
     <script src="js/chat.js"></script>
 
 </body>

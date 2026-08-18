@@ -13,7 +13,6 @@ const currentUser = JSON.parse(localStorage.getItem("user"));
 let selectedUser = null;
 let typingTimeout = null;
 
-// NEW: Default Avatar SVG (Gray circle with user icon)
 const DEFAULT_AVATAR = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2NjYyI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==";
 
 // =========================
@@ -28,15 +27,14 @@ const logoutBtn = document.getElementById("logoutBtn");
 const backBtn = document.getElementById("backBtn");
 const sidebarProfilePic = document.getElementById("sidebarProfilePic");
 const headerProfilePic = document.getElementById("headerProfilePic");
+const searchInput = document.getElementById("searchInput");
 
-// NEW: Cropper Modal Elements
 const cropModal = document.getElementById("cropModal");
 const imageToCrop = document.getElementById("imageToCrop");
 const cropAndUploadBtn = document.getElementById("cropAndUploadBtn");
 const cancelCropBtn = document.getElementById("cancelCropBtn");
 let cropper;
 
-// Set Default Avatars on load
 sidebarProfilePic.src = DEFAULT_AVATAR;
 headerProfilePic.src = DEFAULT_AVATAR;
 
@@ -53,12 +51,72 @@ logoutBtn.addEventListener("click", () => {
 });
 
 // =========================
-// Add Contact Logic
+// NEW: Universal Search Logic (Instagram Style)
 // =========================
-document.getElementById("addContactBtn").addEventListener("click", async () => {
-    const email = document.getElementById("contactEmail").value.trim();
-    if (!email) return alert("Please enter an email");
+let searchTimeout = null;
+searchInput.addEventListener("input", (e) => {
+    const query = e.target.value.trim();
+    
+    // Clear previous timeout
+    clearTimeout(searchTimeout);
+    
+    if (query === "") {
+        // If search is empty, show normal contact list
+        loadUsers();
+    } else {
+        // Debounce search to avoid spamming the server
+        searchTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch(`https://themessager.duckdns.org/api/user/search?query=${query}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    displaySearchResults(data.users);
+                }
+            } catch (error) { console.log(error); }
+        }, 400);
+    }
+});
 
+// Function to display search results
+function displaySearchResults(users) {
+    const userList = document.getElementById("userList");
+    userList.innerHTML = "";
+    
+    if (users.length === 0) {
+        userList.innerHTML = `<p style="text-align:center; color:#999; padding:20px;">No users found</p>`;
+        return;
+    }
+
+    users.forEach(user => {
+        const div = document.createElement("div");
+        div.className = "user";
+        const userPicUrl = user.profilePic ? "https://themessager.duckdns.org" + user.profilePic : DEFAULT_AVATAR;
+        div.innerHTML = `
+            <img src="${userPicUrl}" class="user-pic" alt="Pic">
+            <div class="user-info">
+                <h3>${user.name}</h3>
+                <small style="color: ${user.isOnline ? 'green' : 'gray'}">
+                    ${user.isOnline ? '🟢 Online' : '⚪ Offline'}
+                </small>
+            </div>
+            <button class="add-search-btn" data-email="${user.email}">Add</button>
+        `;
+        
+        // Attach click listener to the Add button
+        div.querySelector(".add-search-btn").addEventListener("click", async (e) => {
+            e.stopPropagation();
+            const email = e.target.getAttribute("data-email");
+            await addContactByEmail(email);
+        });
+
+        userList.appendChild(div);
+    });
+}
+
+// Function to add contact by email
+async function addContactByEmail(email) {
     try {
         const response = await fetch("https://themessager.duckdns.org/api/user/add-contact", {
             method: "POST",
@@ -68,16 +126,15 @@ document.getElementById("addContactBtn").addEventListener("click", async () => {
         const data = await response.json();
         if (data.success) {
             alert("Contact added successfully!");
-            document.getElementById("contactEmail").value = "";
-            loadUsers();
+            searchInput.value = ""; // Clear search
+            loadUsers(); // Reload contact list
         } else {
             alert(data.message);
         }
     } catch (error) {
-        console.log(error);
         alert("Failed to add contact");
     }
-});
+}
 
 // =========================
 // Mobile Back Button Logic
@@ -100,6 +157,9 @@ socket.on("disconnect", () => { console.log("🔴 Socket Disconnected"); });
 // Load Users
 // =========================
 async function loadUsers() {
+    // Only load normal list if search is empty
+    if (searchInput.value.trim() !== "") return;
+    
     try {
         const response = await fetch("https://themessager.duckdns.org/api/user", {
             method: "GET",
@@ -114,8 +174,6 @@ async function loadUsers() {
                     selectedUser.lastSeen = updatedUser.lastSeen;
                     selectedUser.profilePic = updatedUser.profilePic;
                     updateUserStatus(selectedUser);
-                    
-                    // Update header pic if exists
                     if (updatedUser.profilePic) {
                         headerProfilePic.src = "https://themessager.duckdns.org" + updatedUser.profilePic;
                     } else {
@@ -134,15 +192,13 @@ function displayUsers(users) {
         const div = document.createElement("div");
         div.className = "user";
         const unreadBadge = user.unreadCount > 0 ? `<span class="unread-badge">${user.unreadCount}</span>` : '';
-        
-        // NEW: Use default avatar if no profilePic
         const userPicUrl = user.profilePic ? "https://themessager.duckdns.org" + user.profilePic : DEFAULT_AVATAR;
         
+        // NEW: Hide email! Only show Name, Online status, and Unread badge
         div.innerHTML = `
             <img src="${userPicUrl}" class="user-pic" alt="Pic">
             <div class="user-info">
                 <h3>${user.name}</h3>
-                <p>${user.email}</p>
                 <small style="color: ${user.isOnline ? 'green' : 'gray'}">
                     ${user.isOnline ? '🟢 Online' : '⚪ Offline'}
                 </small>
@@ -162,7 +218,6 @@ async function selectUser(user) {
     chatUserHeader.innerText = user.name;
     updateUserStatus(user);
     
-    // Set header profile pic
     if (user.profilePic) {
         headerProfilePic.src = "https://themessager.duckdns.org" + user.profilePic;
     } else {
@@ -465,7 +520,7 @@ function displayMessage(messageObj) {
 }
 
 // =========================
-// NEW: Profile Picture Crop & Upload
+// Profile Picture Crop & Upload
 // =========================
 document.getElementById("fileInput").addEventListener("change", (e) => {
     const file = e.target.files[0];
@@ -489,10 +544,7 @@ document.getElementById("fileInput").addEventListener("change", (e) => {
 cropAndUploadBtn.addEventListener("click", async () => {
     if (!cropper) return;
     
-    const canvas = cropper.getCroppedCanvas({
-        width: 200,
-        height: 200,
-    });
+    const canvas = cropper.getCroppedCanvas({ width: 200, height: 200 });
     
     canvas.toBlob(async (blob) => {
         if (!blob) return alert("Failed to crop image");
@@ -537,7 +589,6 @@ if (localStorage.getItem("darkMode") === "enabled") {
 
 darkModeBtn.addEventListener("click", () => {
     body.classList.toggle("dark-mode");
-    
     if (body.classList.contains("dark-mode")) {
         localStorage.setItem("darkMode", "enabled");
         darkModeBtn.innerText = "☀️";

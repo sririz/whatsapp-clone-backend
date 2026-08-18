@@ -468,3 +468,17 @@ body.dark-mode .message-box { background: #1e1e2f; border-top: 1px solid #2d2d44
 body.dark-mode #messageInput { background: #2d2d44; color: white; border-color: #3d3d5c; }
 body.dark-mode .message.received .bubble { background: #2d2d44; color: #e0e0e0; box-shadow: none; }
 body.dark-mode .message-actions { background: #2d2d44; border: 1px solid #3d3d5c; }
+/* Search Add Button */
+.add-search-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+.add-search-btn:hover {
+    background: #5568d3;
+}
