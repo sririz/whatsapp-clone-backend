@@ -3,6 +3,7 @@ const router = express.Router();
 const protect = require("../middleware/authMiddleware");
 const Message = require("../models/Message");
 const User = require("../models/User");
+const Block = require("../models/Block"); // NEW: Import Block Model
 
 // Send a new message
 router.post("/send", protect, async (req, res) => {
@@ -10,9 +11,10 @@ router.post("/send", protect, async (req, res) => {
         const { receiver, message } = req.body;
         
         // NEW: Check if receiver blocked the sender
-        const receiverUser = await User.findById(receiver);
-        if (receiverUser.blockedUsers.includes(req.user.id)) {
-            return res.status(403).json({ success: false, message: "You cannot message this user." });
+        const isBlocked = await Block.exists({ blocker: receiver, blocked: req.user.id });
+        if (isBlocked) {
+            // Deny action and return generic response (do not reveal blocking)
+            return res.status(403).json({ success: false, message: "Message failed to send. Please try again later." });
         }
 
         const newMessage = await Message.create({ sender: req.user.id, receiver, message });
@@ -68,10 +70,9 @@ router.delete("/:id", protect, async (req, res) => {
     }
 });
 
-// NEW: CLEAR CHAT
+// CLEAR CHAT
 router.post("/clear-chat/:userId", protect, async (req, res) => {
     try {
-        // Add current user to deletedFor array of all messages between these two users
         await Message.updateMany(
             {
                 $or: [

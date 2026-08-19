@@ -1,5 +1,6 @@
 const User = require("../models/User");
-const Message = require("../models/Message"); // [NEW] Import Message Model
+const Message = require("../models/Message"); 
+const Block = require("../models/Block"); // NEW: Import Block Model
 
 let onlineUsers = [];
 
@@ -7,9 +8,6 @@ const socketHandler = (io) => {
     io.on("connection", (socket) => {
         console.log("🟢 User Connected:", socket.id);
 
-        // =========================
-        // User Join
-        // =========================
         socket.on("join", async (userId) => {
             try {
                 onlineUsers = onlineUsers.filter(user => user.userId !== userId);
@@ -24,84 +22,69 @@ const socketHandler = (io) => {
             }
         });
 
-        // =========================
-        // Send Message
-        // =========================
-        socket.on("sendMessage", (data) => {
-            console.log(`📩 ${data.sender} → ${data.receiver}: ${data.message}`);
-            
-            const receiver = onlineUsers.find(user => user.userId === data.receiver);
+        socket.on("sendMessage", async (data) => {
+            try {
+                console.log(`📩 ${data.sender} → ${data.receiver}: ${data.message}`);
+                
+                // NEW: Check if receiver blocked the sender
+                const isBlocked = await Block.exists({ blocker: data.receiver, blocked: data.sender });
+                if (isBlocked) {
+                    // Silently drop the message. Do not emit to receiver, do not notify sender.
+                    return;
+                }
 
-            if (receiver) {
-                io.to(receiver.socketId).emit("receiveMessage", {
-                    messageId: data.messageId, // [NEW] Pass messageId for tracking
-                    sender: data.sender,
-                    receiver: data.receiver,
-                    message: data.message,
-                    createdAt: new Date()
-                });
-                console.log("✅ Message Delivered to Socket");
-            } else {
-                console.log("⚪ Receiver Offline");
+                const receiver = onlineUsers.find(user => user.userId === data.receiver);
+
+                if (receiver) {
+                    io.to(receiver.socketId).emit("receiveMessage", {
+                        messageId: data.messageId,
+                        sender: data.sender,
+                        receiver: data.receiver,
+                        message: data.message,
+                        createdAt: new Date()
+                    });
+                    console.log("✅ Message Delivered to Socket");
+                } else {
+                    console.log("⚪ Receiver Offline");
+                }
+            } catch (error) {
+                console.log("Socket send error:", error);
             }
         });
 
-        // =========================
-        // [NEW] Message Delivered
-        // =========================
         socket.on("messageDelivered", async (data) => {
             try {
-                // Update DB
                 if (data.messageId) {
                     await Message.findByIdAndUpdate(data.messageId, { delivered: true });
                 }
-                // Notify Sender
-                io.to(data.sender).emit("messageDelivered", {
-                    messageId: data.messageId
-                });
+                io.to(data.sender).emit("messageDelivered", { messageId: data.messageId });
             } catch (error) {
                 console.log(error);
             }
         });
 
-        // =========================
-        // [NEW] Message Seen
-        // =========================
         socket.on("messageSeen", async (data) => {
             try {
-                // Update DB for all messages provided
                 if (data.messageIds && data.messageIds.length > 0) {
                     await Message.updateMany(
                         { _id: { $in: data.messageIds } },
                         { $set: { seen: true, delivered: true } }
                     );
                 }
-                // Notify Sender
-                io.to(data.sender).emit("messageSeen", {
-                    messageIds: data.messageIds
-                });
+                io.to(data.sender).emit("messageSeen", { messageIds: data.messageIds });
             } catch (error) {
                 console.log(error);
             }
         });
 
-        // =========================
-        // Typing
-        // =========================
         socket.on("typing", (data) => {
             io.to(data.receiver).emit("typing", { sender: data.sender });
         });
 
-        // =========================
-        // Stop Typing
-        // =========================
         socket.on("stopTyping", (data) => {
             io.to(data.receiver).emit("stopTyping", { sender: data.sender });
         });
 
-        // =========================
-        // Disconnect
-        // =========================
         socket.on("disconnect", async () => {
             try {
                 console.log("🔴 User Disconnected:", socket.id);
